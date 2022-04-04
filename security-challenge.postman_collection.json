@@ -1,0 +1,1218 @@
+{
+	"info": {
+		"_postman_id": "df040a02-47a3-4164-8387-a8548b4de062",
+		"name": "security-challenge",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "start-here",
+			"item": [
+				{
+					"name": "/users",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{$randomInt}}.{{$randomEmail}}\",\n    \"password\": \"{{$randomWord}}\",\n    \"roles\": [\"ROLE_ANY\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/clients",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"{{$randomInt}}.{{$randomWord}}\",\n    \"scopes\": \"email profile\",\n    \"{{security.field.redirect_uri}}\": \"{{$randomUrl}}\",\n    \"{{security.field.access_token_validity}}\": {{$randomInt}},\n    \"{{security.field.refresh_token_validity}}\": {{$randomInt}}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/clients",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"clients"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "tests",
+			"item": [
+				{
+					"name": "/oauth/token (password)",
+					"item": [
+						{
+							"name": "Should response with token when password grant has been requested",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with token when password grant has been requested\", function () {",
+											"    pm.response.to.have.status(200);",
+											"",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData.access_token).to.not.empty;",
+											"    pm.expect(jsonData.refresh_token).to.not.empty;",
+											"    pm.expect(jsonData.token_type).to.not.empty;",
+											"    pm.expect(jsonData.expires_in).to.greaterThan(0);",
+											"    pm.expect(jsonData.scope).to.not.empty;",
+											"",
+											"});",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "{{password}}",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with 401 when client does not exist",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 401 when client does not exist\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}_",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{client_id}}_",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with 401 when client credentials are wrong",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 401 when client credentials are wrong\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}_",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with 400 when user does not exist",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 400 when user does not exist\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}_",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with 400 when user credentials are wrong",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 400 when user credentials are wrong\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "{{password}}",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}_",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/oauth/token (refresh token)",
+					"item": [
+						{
+							"name": "Should response with token when refresh_token grant has been requested",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with token when refresh_token grant has been requested\", function () {",
+											"    pm.response.to.have.status(200);",
+											"",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData.access_token).to.not.empty;",
+											"    pm.expect(jsonData.refresh_token).to.not.empty;",
+											"    pm.expect(jsonData.token_type).to.not.empty;",
+											"    pm.expect(jsonData.expires_in).to.greaterThan(0);",
+											"    pm.expect(jsonData.scope).to.not.empty;",
+											"",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"type": "text"
+										},
+										{
+											"key": "refresh_token",
+											"value": "{{refresh_token}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should refresh response with 401 when client does not exist",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should refresh response with 401 when client does not exist\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}_",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}_",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"type": "text"
+										},
+										{
+											"key": "refresh_token",
+											"value": "{{refresh_token}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should refresh response with 401 when client credentials are wrong",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should refresh response with 401 when client credentials are wrong\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}_",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"type": "text"
+										},
+										{
+											"key": "refresh_token",
+											"value": "{{refresh_token}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+									"requestToken(pm.variables.get(\"username\"));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/artists (get)",
+					"item": [
+						{
+							"name": "Should response arrays of artists when no token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response arrays of artists when no token has been given\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData).to.has.length.greaterThan(0);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/artists/{name} (get)",
+					"item": [
+						{
+							"name": "Should response with artists when token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with artists when token has been given\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData.name).to.eql(pm.variables.get(\"name\"));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists/{{name}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists",
+										"{{name}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.sendRequest({",
+									"    url: \"http://localhost:8000/artists\",",
+									"    method: \"GET\",",
+									"}, (error, response) => {",
+									"    pm.expect(response.code).to.eql(200);",
+									"    const data = response.json();",
+									"    pm.variables.set(\"name\", data[0].name);",
+									"});",
+									"",
+									"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+									"requestToken(pm.variables.get(\"username\"));",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/artists (post)",
+					"item": [
+						{
+							"name": "Should response with artists when admin token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with artists when admin token has been given\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    const jsonData = pm.response.json();",
+											"    const body = JSON.parse(pm.request.body.raw);",
+											"    ",
+											"    pm.expect(jsonData.name).to.eql(body.name);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"{{$randomAdjective}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/artists",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+									"requestToken(pm.variables.get(\"admin_username\"));",
+									"",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const createClient = async (accessTokenValidity, refreshTokenValidity, callback) => {",
+							"    const clientId = pm.variables.replaceIn(\"{{$guid}}\");",
+							"    ",
+							"    callback = callback || ((error, response) => {",
+							"        pm.expect(response.code).to.eql(201);",
+							"",
+							"        const json = response.json();",
+							"        pm.variables.set(\"client_id\", json[pm.environment.get(\"security.field.client_id\")]);",
+							"        pm.variables.set(\"client_secret\", json[pm.environment.get(\"security.field.client_secret\")]);",
+							"    });",
+							"",
+							"    const body = {",
+							"        \"name\": pm.variables.replaceIn(\"{{$randomInt}}.{{$randomWord}}\"),",
+							"        \"scopes\": \"email profile\"",
+							"    }",
+							"",
+							"    body[pm.environment.get(\"security.field.redirect_uri\")] = pm.variables.replaceIn(\"{{$randomUrl}}\");",
+							"    body[pm.environment.get(\"security.field.access_token_validity\")] = accessTokenValidity;",
+							"    body[pm.environment.get(\"security.field.refresh_token_validity\")] = refreshTokenValidity;",
+							"",
+							"    pm.sendRequest({",
+							"        url: \"http://localhost:8000/clients\",",
+							"        method: \"POST\",",
+							"        header: 'Content-Type:application/json',",
+							"        body: {",
+							"            mode: \"raw\",",
+							"            raw: JSON.stringify(body)",
+							"        },",
+							"    }, callback);",
+							"}",
+							"",
+							"const createUser = async (username, role, callback) => {",
+							"",
+							"    callback = callback || ((error, response) => pm.expect(response.code).to.eql(201));",
+							"",
+							"    pm.sendRequest({",
+							"        url: \"http://localhost:8000/users\",",
+							"        method: \"POST\",",
+							"        header: 'Content-Type:application/json',",
+							"        body: {",
+							"            mode: \"raw\",",
+							"            raw: JSON.stringify({",
+							"                \"username\": username,",
+							"                \"password\": pm.variables.get(\"password\"),",
+							"                \"roles\": [role]",
+							"            })",
+							"        },",
+							"    }, callback);",
+							"",
+							"}",
+							"",
+							"const requestToken = async (username, callback) => {",
+							"    const authentication = btoa(pm.variables.get(\"client_id\") + \":\" + pm.variables.get(\"client_secret\"));",
+							"",
+							"    callback = callback || ((error, response) => {",
+							"        pm.expect(response.code).to.eql(200);",
+							"",
+							"        pm.variables.set(\"access_token\", response.json().access_token);",
+							"        pm.variables.set(\"refresh_token\", response.json().refresh_token);",
+							"    });",
+							"    ",
+							"    pm.sendRequest({",
+							"        async: false,",
+							"        url: \"http://localhost:8000/oauth/token\",",
+							"        method: \"POST\",",
+							"        header: [",
+							"            'Content-Type:application/x-www-form-urlencoded',",
+							"            'Authorization: Basic ' + authentication",
+							"        ],",
+							"        body: {",
+							"            mode: \"urlencoded\",",
+							"            urlencoded: [",
+							"                {key: \"client_id\", value: pm.variables.get(\"client_id\")},",
+							"                {key: \"username\", value: username},",
+							"                {key: \"password\", value: pm.variables.get(\"password\")},",
+							"                {key: \"grant_type\", value: \"password\"}",
+							"            ]",
+							"        },",
+							"    }, callback);",
+							"}",
+							"",
+							"const username = pm.variables.replaceIn(\"{{$randomInt}}\") + pm.variables.replaceIn(\"{{$randomEmail}}\");",
+							"const admin_username = pm.variables.replaceIn(\"{{$randomInt}}\") + pm.variables.replaceIn(\"{{$randomEmail}}\");",
+							"",
+							"pm.globals.set(\"createClient\", createClient.toString());",
+							"pm.globals.set(\"createUser\", createUser.toString());",
+							"pm.globals.set(\"requestToken\", requestToken.toString());",
+							"",
+							"pm.variables.set(\"username\", username);",
+							"pm.variables.set(\"admin_username\", admin_username);",
+							"pm.variables.set(\"password\", \"password\");",
+							"",
+							"createClient(60, 60);",
+							"createUser(pm.variables.get(\"username\"), \"USER\");",
+							"createUser(pm.variables.get(\"admin_username\"), \"ADMIN\");",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

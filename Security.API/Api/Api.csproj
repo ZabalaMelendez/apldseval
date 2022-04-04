@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Security.Api</AssemblyName>
+    <RootNamespace>Security.Api</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.23" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Security.API.Application\Security.API.Application.csproj" />
+    <ProjectReference Include="..\Security.API.Infrastructure\Security.API.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,887 @@
+{
+	"info": {
+		"_postman_id": "d4257efa-895e-4705-85a1-433c5f75857e",
+		"name": "security-challenge-hidden",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "tests",
+			"item": [
+				{
+					"name": "/oauth/token (refresh token)",
+					"item": [
+						{
+							"name": "Should response with 401 when refresh token has expired",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 401 when refresh token has expired\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const createClient = eval(pm.globals.get(\"createClient\"));",
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"",
+											"createClient(1, 1, (error, response) => {",
+											"    requestToken(pm.variables.get(\"username\"));",
+											"    setTimeout(() => {}, 2000);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"type": "text"
+										},
+										{
+											"key": "refresh_token",
+											"value": "{{refresh_token}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with 400 when refresh token is invalid",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 400 when refresh token is invalid\", function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const refreshToken = pm.variables.get(\"refresh_token\");",
+											"pm.variables.set(\"refresh_token\", refreshToken + 1);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{client_id}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "client_id",
+											"value": "{{client_id}}",
+											"type": "text"
+										},
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"type": "text"
+										},
+										{
+											"key": "refresh_token",
+											"value": "{{refresh_token}}",
+											"type": "text"
+										}
+									],
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/oauth/token",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"oauth",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+									"requestToken(pm.variables.get(\"username\"));"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/artists (get)",
+					"item": [
+						{
+							"name": "Should response arrays of artists when token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"requestToken(pm.variables.get(\"username\"));"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response arrays of artists when token has been given\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData).to.has.length.greaterThan(0);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response arrays of artists when admin token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"requestToken(pm.variables.get(\"admin_username\"));"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response arrays of artists when admin token has been given\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData).to.has.length.greaterThan(0);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/artists/{name} (get)",
+					"item": [
+						{
+							"name": "Should get response with 401 when token has not been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should get response with 401 when token has not been given\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists/{{name}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists",
+										"{{name}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with artist when admin token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"requestToken(pm.variables.get(\"admin_username\"));",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with artist when admin token has been given\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData.name).to.eql(pm.variables.get(\"name\"));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists/{{name}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists",
+										"{{name}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with artist when token has been given with any role",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"const createUser = eval(pm.globals.get(\"createUser\"));",
+											"const username = pm.variables.replaceIn(\"{{$randomInt}}\") + pm.variables.replaceIn(\"{{$randomEmail}}\");",
+											"pm.variables.set(\"username\", username)",
+											"",
+											"createUser(username, \"ANY_ROLE\", (error, response) => {",
+											"    pm.expect(response.code).to.eql(201);",
+											"    requestToken(pm.variables.get(\"username\"));",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with artist when token has been given with any role\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    const jsonData = pm.response.json();",
+											"    ",
+											"    pm.expect(jsonData.name).to.eql(pm.variables.get(\"name\"));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists/{{name}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists",
+										"{{name}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should response with 401 when token has been expired",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const createClient = eval(pm.globals.get(\"createClient\"));",
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"",
+											"createClient(1, 1, (error, response) => {",
+											"    pm.expect(response.code).to.eql(201);",
+											"    requestToken(pm.variables.get(\"username\"));",
+											"    setTimeout(() => {}, 2000);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 401 when token has been expired\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/artists/{{name}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists",
+										"{{name}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.sendRequest({",
+									"    url: \"http://localhost:8000/artists\",",
+									"    method: \"GET\",",
+									"}, (error, response) => {",
+									"    pm.expect(response.code).to.eql(200);",
+									"    const data = response.json();",
+									"    pm.variables.set(\"name\", data[0].name);",
+									"});",
+									"",
+									"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+									"requestToken(pm.variables.get(\"username\"));",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "/artists (post)",
+					"item": [
+						{
+							"name": "Should response with 403 when not an admin token has been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+											"requestToken(pm.variables.get(\"username\"));"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should response with 403 when not an admin token has been given\", function () {",
+											"    pm.response.to.have.status(403);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"name\": \"{{$randomAdjective}}\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/artists",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Should post response with 401 when token has not been given",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Should post response with 401 when token has not been given\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"name\": \"{{$randomAdjective}}\"}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8000/artists",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"artists"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const requestToken = eval(pm.globals.get(\"requestToken\"));",
+									"",
+									"requestToken(pm.variables.get(\"admin_username\"));",
+									"",
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const createClient = async (accessTokenValidity, refreshTokenValidity, customCallback) => {",
+							"    customCallback = customCallback || ((error, response) => null);",
+							"    callback = ((error, response) => {",
+							"        pm.expect(response.code).to.eql(201);",
+							"",
+							"        const json = response.json();",
+							"        pm.variables.set(\"client_id\", json[pm.environment.get(\"security.field.client_id\")]);",
+							"        pm.variables.set(\"client_secret\", json[pm.environment.get(\"security.field.client_secret\")]);",
+							"",
+							"        customCallback(error, response);",
+							"    });",
+							"",
+							"    const body = {",
+							"        \"name\": pm.variables.replaceIn(\"{{$randomInt}}.{{$randomWord}}\"),",
+							"        \"scopes\": \"email profile\"",
+							"    }",
+							"",
+							"    body[pm.environment.get(\"security.field.redirect_uri\")] = pm.variables.replaceIn(\"{{$randomUrl}}\");",
+							"    body[pm.environment.get(\"security.field.access_token_validity\")] = accessTokenValidity;",
+							"    body[pm.environment.get(\"security.field.refresh_token_validity\")] = refreshTokenValidity;",
+							"",
+							"    pm.sendRequest({",
+							"        url: \"http://localhost:8000/clients\",",
+							"        method: \"POST\",",
+							"        header: 'Content-Type:application/json',",
+							"        body: {",
+							"            mode: \"raw\",",
+							"            raw: JSON.stringify(body)",
+							"        },",
+							"    }, callback);",
+							"}",
+							"",
+							"const createUser = async (username, role, callback) => {",
+							"",
+							"    callback = callback || ((error, response) => pm.expect(response.code).to.eql(201));",
+							"",
+							"    pm.sendRequest({",
+							"        url: \"http://localhost:8000/users\",",
+							"        method: \"POST\",",
+							"        header: 'Content-Type:application/json',",
+							"        body: {",
+							"            mode: \"raw\",",
+							"            raw: JSON.stringify({",
+							"                \"username\": username,",
+							"                \"password\": pm.variables.get(\"password\"),",
+							"                \"roles\": [role]",
+							"            })",
+							"        },",
+							"    }, callback);",
+							"",
+							"}",
+							"",
+							"const requestToken = async (username, callback) => {",
+							"    const authentication = btoa(pm.variables.get(\"client_id\") + \":\" + pm.variables.get(\"client_secret\"));",
+							"",
+							"    callback = callback || ((error, response) => {",
+							"        pm.expect(response.code).to.eql(200);",
+							"",
+							"        pm.variables.set(\"access_token\", response.json().access_token);",
+							"        pm.variables.set(\"refresh_token\", response.json().refresh_token);",
+							"    });",
+							"    ",
+							"    pm.sendRequest({",
+							"        async: false,",
+							"        url: \"http://localhost:8000/oauth/token\",",
+							"        method: \"POST\",",
+							"        header: [",
+							"            'Content-Type:application/x-www-form-urlencoded',",
+							"            'Authorization: Basic ' + authentication",
+							"        ],",
+							"        body: {",
+							"            mode: \"urlencoded\",",
+							"            urlencoded: [",
+							"                {key: \"client_id\", value: pm.variables.get(\"client_id\")},",
+							"                {key: \"username\", value: username},",
+							"                {key: \"password\", value: pm.variables.get(\"password\")},",
+							"                {key: \"grant_type\", value: \"password\"}",
+							"            ]",
+							"        },",
+							"    }, callback);",
+							"}",
+							"",
+							"const username = pm.variables.replaceIn(\"{{$randomInt}}\") + pm.variables.replaceIn(\"{{$randomEmail}}\");",
+							"const admin_username = pm.variables.replaceIn(\"{{$randomInt}}\") + pm.variables.replaceIn(\"{{$randomEmail}}\");",
+							"",
+							"pm.globals.set(\"createClient\", createClient.toString());",
+							"pm.globals.set(\"createUser\", createUser.toString());",
+							"pm.globals.set(\"requestToken\", requestToken.toString());",
+							"",
+							"pm.variables.set(\"username\", username);",
+							"pm.variables.set(\"admin_username\", admin_username);",
+							"pm.variables.set(\"password\", \"password\");",
+							"",
+							"createClient(60, 60);",
+							"createUser(pm.variables.get(\"username\"), \"USER\");",
+							"createUser(pm.variables.get(\"admin_username\"), \"ADMIN\");",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
